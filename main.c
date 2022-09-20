@@ -6,15 +6,16 @@
 
 
 
-#define PIN_ALARM GPIOA,GPIO_PINS_6
-#define PIN_CONTROL_RELE GPIOA,GPIO_PINS_2
-#define PIN_POWER_RELE GPIOA,GPIO_PINS_0
-#define PIN_LED_RED GPIOB,GPIO_PINS_1
-#define PIN_ZUMMER GPIOB,GPIO_PINS_0
-#define PIN_POWER_SENSOR GPIOA,GPIO_PINS_4
-#define PIN_SENSOR_1 GPIOA,GPIO_PINS_5
-#define PIN_FUN GPIOA,GPIO_PINS_3
-
+#define PIN_ALARM 					GPIOA,GPIO_PINS_2
+#define PIN_CONTROL_RELE 		GPIOA,GPIO_PINS_1
+#define PIN_POWER_RELE			GPIOA,GPIO_PINS_0
+#define PIN_LED_RED 				GPIOA,GPIO_PINS_12
+#define PIN_ZUMMER 					GPIOA,GPIO_PINS_15//14
+#define PIN_POWER_SENSOR 		GPIOA,GPIO_PINS_11
+#define PIN_SENSOR_1 				GPIOB,GPIO_PINS_5
+#define PIN_SENSOR_2 				GPIOB,GPIO_PINS_4
+#define PIN_FUN 						GPIOB,GPIO_PINS_3
+#define DEBUG
 
 /*_____________________________________________________________________*/
 
@@ -57,10 +58,10 @@ static union {
         unsigned FUN_LOW : 1;
         unsigned ALLOW_MEASURE : 1;
         unsigned ALLOW_FUN : 1;
-        unsigned ALLOW_JUMP : 1;
-        unsigned JUMP_LOW : 1;
+        unsigned : 1;
+        unsigned : 1;
 
-        unsigned JUMP_HIGH : 1;
+        unsigned : 1;
         unsigned OPENING : 1;
         unsigned OPENED : 1;
         unsigned CLOSING : 1;
@@ -73,8 +74,8 @@ static union {
         unsigned SIREN : 1;
         unsigned ZUM_BUSY : 1;
         unsigned MOVING_ALLOWED : 1;
-        unsigned NORMAL_WORK_MODE_ON : 1;
-        unsigned UNIVERSAL_VORK_MODE_ON : 1;
+        unsigned : 1;
+        unsigned : 1;
         unsigned LED_ON : 1;
         unsigned SEC_LOCK : 1;
 
@@ -247,12 +248,8 @@ void rele_off() {
     ff.bits.CLOSING = 0;
     ff.bits.OPENING = 0;
     ff.bits.CLOSED = 0;
-    if (ff.bits.UNIVERSAL_VORK_MODE_ON) {
-        ff.bits.OPENED = 1;
-    } else {
-        ff.bits.OPENED = 0;
-    }
-    ff.bits.MOVING_ALLOWED = 0;
+   ff.bits.OPENED = 0;
+     ff.bits.MOVING_ALLOWED = 0;
     time_moving_wait = MOVING_WAIT_DELAY;
 }
 
@@ -260,11 +257,7 @@ void close() {
     if (ff.bits.OPENING) {
         rele_off();
     } else {
-        if (ff.bits.NORMAL_WORK_MODE_ON) {
             go_close();
-        } else if (ff.bits.UNIVERSAL_VORK_MODE_ON) {
-            go_close_alt();
-        }
     }
 }
 
@@ -272,11 +265,7 @@ void open() {
     if (ff.bits.CLOSING) {
         rele_off();
     } else {
-        if (ff.bits.NORMAL_WORK_MODE_ON) {
             go_open();
-        } else if (ff.bits.UNIVERSAL_VORK_MODE_ON) {
-            go_open_alt();
-        }
     }
 }
 
@@ -364,31 +353,13 @@ void fun_work() {
     }
 }
 
-void switch_wm() {
-    if (ff.bits.JUMP_LOW) {//go_universal_mode
-        if (!ff.bits.UNIVERSAL_VORK_MODE_ON) {
-            ff.bits.NORMAL_WORK_MODE_ON = 0;
-            ff.bits.UNIVERSAL_VORK_MODE_ON = 1;
-            rele_off();
-          //  beep_long_count = 2;
-        }
-    } else if (ff.bits.JUMP_HIGH) {//go_norm_mode
-        if (!ff.bits.NORMAL_WORK_MODE_ON) {
-            ff.bits.NORMAL_WORK_MODE_ON = 1;
-            ff.bits.UNIVERSAL_VORK_MODE_ON = 0;
-            rele_off();
-          //  beep_long_count = 1;
-        }
-    }
-}
 
 void autorotation_work() {
 
     if ((time_rotation > (AUTOROTATION_DELAY + RELE_POWER_AUTOROTATION_DELAY + RELE_GAP * 2)) && //???????? ???? ????????? ?????
             !ff.bits.OPENED &&
             !ff.bits.OPENING &&
-            ff.bits.ALARM_OFF &&
-            ff.bits.NORMAL_WORK_MODE_ON
+            ff.bits.ALARM_OFF 
        ) {
         open();
         beep_short_count=1;
@@ -398,8 +369,7 @@ void autorotation_work() {
     if ((time_rotation > AUTOROTATION_DELAY) &&
             !ff.bits.CLOSED &&
             !ff.bits.CLOSING &&
-            ff.bits.ALARM_OFF &&
-            ff.bits.NORMAL_WORK_MODE_ON
+            ff.bits.ALARM_OFF 
        ) {
         go_close_short();
         ff.bits.AUTOROTATION_WORK = 1;
@@ -454,12 +424,11 @@ void sec_work() {
     }
 
     //autorotation tick
-    if (ff.bits.NORMAL_WORK_MODE_ON) {
         if (!ff.bits.CLOSED) {
             time_rotation++;
         }
         rele_tick();
-    }
+    
 
     //led tick
     if (ff.bits.ALARM_ON || ff.bits.CLOSING || ff.bits.OPENING) {
@@ -526,7 +495,7 @@ void ms_10_work() {
 
     static char f;
 
-    if ( !ff.bits.ALARM_ON &&(ff.bits.NORMAL_WORK_MODE_ON || ff.bits.UNIVERSAL_VORK_MODE_ON)) {     //
+    if ( !ff.bits.ALARM_ON) {     //
         if (!f) {
             PIN_POWER_MEAS_SetHigh();
             f=1;
@@ -552,9 +521,6 @@ void ms_tick() {
     }   else {
         stop_tone();
     }
-
-
-    ff.bits.ALLOW_JUMP = 1;
 
     if (ms10_count <=millis) {
         ms10_count = millis+10;
@@ -625,13 +591,14 @@ void timer_init() {
 
 
 void hardware_init() {
-
+   #ifndef DEBUG
     wdt_register_write_enable(TRUE);
     wdt_divider_set(WDT_CLK_DIV_8);
     wdt_register_write_enable(FALSE);
-    wdt_enable();                  //todo
-    wdt_counter_reload();
+	wdt_enable();
 
+    wdt_counter_reload();
+ #endif	
 
     crm_hick_sclk_frequency_select(CRM_HICK_SCLK_8MHZ);
     crm_clock_source_enable (CRM_CLOCK_SOURCE_HICK,TRUE);
@@ -677,7 +644,7 @@ void hardware_init() {
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_INPUT,
              GPIO_OUTPUT_PUSH_PULL,
-             GPIO_PULL_UP);
+             GPIO_PULL_NONE);
 
     gpio_set(PIN_POWER_SENSOR,
              GPIO_DRIVE_STRENGTH_STRONGER,
@@ -697,11 +664,7 @@ void hardware_init() {
              GPIO_OUTPUT_PUSH_PULL,
              GPIO_PULL_NONE);
 
-    gpio_set(GPIOA,GPIO_PINS_7,
-             GPIO_DRIVE_STRENGTH_MODERATE,
-             GPIO_MODE_INPUT,
-             GPIO_OUTPUT_PUSH_PULL,
-             GPIO_PULL_UP);
+   
 
     timer_init();
 
@@ -796,12 +759,12 @@ char PIN_FUN_STATE_GetValue() {
 
 void get_fun() {
 
-    if(!(ff.bits.NORMAL_WORK_MODE_ON || ff.bits.UNIVERSAL_VORK_MODE_ON)) {
+    
         PIN_POWER_MEAS_SetHigh();
         fun_result = gpio_input_data_bit_read(PIN_FUN);
         PIN_POWER_MEAS_SetLow();
         ff.bits.ALLOW_FUN =1;
-    }
+   
 
     if (ff.bits.ALLOW_FUN) {
 
@@ -825,34 +788,9 @@ void get_fun() {
 }
 
 
-char PIN_JUMP_STATE_GetValue() {
-    return(gpio_input_data_bit_read(GPIOA,GPIO_PINS_7));
-}
 
 
-void get_jump() {
 
-    static signed char jump_counter;
-
-    if (ff.bits.ALLOW_JUMP) {
-
-
-        if (PIN_JUMP_STATE_GetValue() ) jump_counter++;
-        else jump_counter--;
-
-        if (jump_counter > JUMP_MEAS_COUNT) {
-            jump_counter = JUMP_MEAS_COUNT;
-            ff.bits.JUMP_LOW = 0;
-            ff.bits.JUMP_HIGH = 1;
-        } else if (jump_counter<-JUMP_MEAS_COUNT) {
-            jump_counter = -JUMP_MEAS_COUNT;
-            ff.bits.JUMP_LOW = 1;
-            ff.bits.JUMP_HIGH = 0;
-        }
-        ff.bits.ALLOW_JUMP = 0;
-    }
-
-}
 
 
 void TMR6_GLOBAL_IRQHandler(void) {
@@ -938,11 +876,7 @@ int main(void) {
 
 
         if (!ff.bits.ALARM_ON) {
-
-            get_jump();
-            switch_wm();
-
-
+            
             get_fun();
             fun_work();
 

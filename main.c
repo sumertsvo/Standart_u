@@ -5,17 +5,24 @@
 
 
 
+//#define DEBUG
 
 #define PIN_ALARM 					GPIOA,GPIO_PINS_2
-#define PIN_CONTROL_RELE 		GPIOA,GPIO_PINS_1
-#define PIN_POWER_RELE			GPIOA,GPIO_PINS_0
+#define PIN_CONTROL_RELE 		GPIOB,GPIO_PINS_5
+#define PIN_POWER_RELE			GPIOB,GPIO_PINS_4
 #define PIN_LED_RED 				GPIOA,GPIO_PINS_12
+
+#ifdef DEBUG
 #define PIN_ZUMMER 					GPIOA,GPIO_PINS_15//14
+#else
+#define PIN_ZUMMER 					GPIOA,GPIO_PINS_14//14
+#endif
+
 #define PIN_POWER_SENSOR 		GPIOA,GPIO_PINS_11
-#define PIN_SENSOR_1 				GPIOB,GPIO_PINS_5
-#define PIN_SENSOR_2 				GPIOB,GPIO_PINS_4
+#define PIN_SENSOR_1 				GPIOA,GPIO_PINS_1
+#define PIN_SENSOR_2 				GPIOA,GPIO_PINS_0
 #define PIN_FUN 						GPIOB,GPIO_PINS_3
-#define DEBUG
+
 
 /*_____________________________________________________________________*/
 
@@ -58,7 +65,7 @@ static union {
         unsigned FUN_LOW : 1;
         unsigned ALLOW_MEASURE : 1;
         unsigned ALLOW_FUN : 1;
-        unsigned : 1;
+        unsigned MEASURING: 1;
         unsigned : 1;
 
         unsigned : 1;
@@ -498,6 +505,7 @@ void ms_10_work() {
     if ( !ff.bits.ALARM_ON) {     //
         if (!f) {
             PIN_POWER_MEAS_SetHigh();
+					ff.bits.MEASURING=1;
             f=1;
         } else {
             adc_ordinary_conversion_trigger_set(ADC1,ADC12_ORDINARY_TRIG_SOFTWARE,TRUE);
@@ -644,7 +652,7 @@ void hardware_init() {
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_INPUT,
              GPIO_OUTPUT_PUSH_PULL,
-             GPIO_PULL_NONE);
+             GPIO_PULL_UP);
 
     gpio_set(PIN_POWER_SENSOR,
              GPIO_DRIVE_STRENGTH_STRONGER,
@@ -656,7 +664,7 @@ void hardware_init() {
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_ANALOG,
              GPIO_OUTPUT_OPEN_DRAIN,
-             GPIO_PULL_NONE);
+             GPIO_PULL_UP);
 
     gpio_set(PIN_ALARM,
              GPIO_DRIVE_STRENGTH_MODERATE,
@@ -677,18 +685,9 @@ void hardware_init() {
 
     adc_enable(ADC1,TRUE);
     adc_interrupt_enable(ADC1,ADC_CCE_INT,TRUE);
-    adc_ordinary_channel_set(ADC1,ADC_CHANNEL_5,1,ADC_SAMPLETIME_239_5);
+    adc_ordinary_channel_set(ADC1,ADC_CHANNEL_1,1,ADC_SAMPLETIME_239_5);
 
 }
-
-
-
-
-
-
-
-
-
 
 
 void hardware_work() {
@@ -702,13 +701,15 @@ void hardware_work() {
 }
 
 
-
-
 void zummer_switch() {
+	#ifdef DEBUG  
+	if(ff.bits.TONE_ON) gpio_bits_write(GPIOA,GPIO_PINS_15,(confirm_state) (!GPIOA ->odt_bit.odt15));
+    if(ff.bits.TONE_ON) gpio_bits_write(GPIOA,GPIO_PINS_15,(confirm_state) (!GPIOA ->odt_bit.odt15));   //todo 
+	#else
+	           if(ff.bits.TONE_ON) gpio_bits_write(GPIOA,GPIO_PINS_14,(confirm_state) (!GPIOA ->odt_bit.odt14));
+    if(ff.bits.TONE_ON) gpio_bits_write(GPIOA,GPIO_PINS_14,(confirm_state) (!GPIOA ->odt_bit.odt14));   //todo
 
-
-    if(ff.bits.TONE_ON) gpio_bits_write(GPIOB,GPIO_PINS_0,(confirm_state) (!GPIOB ->odt_bit.odt0));
-//    if(ff.bits.TONE_ON) gpio_bits_write(GPIOB,GPIO_PINS_0,!GPIOB ->odt_bit.odt0);   //todo
+	#endif
 }
 
 void PIN_POWER_MEAS_SetHigh() {
@@ -759,13 +760,20 @@ char PIN_FUN_STATE_GetValue() {
 
 void get_fun() {
 
-    
+  /*  
+	if(GPIOA->odt_bit.odt1 == 0)		{
         PIN_POWER_MEAS_SetHigh();
         fun_result = gpio_input_data_bit_read(PIN_FUN);
-        PIN_POWER_MEAS_SetLow();
+       PIN_POWER_MEAS_SetLow();
         ff.bits.ALLOW_FUN =1;
-   
-
+		} else
+		 {
+		PIN_POWER_MEAS_SetHigh();
+        fun_result = gpio_input_data_bit_read(PIN_FUN);
+     
+        ff.bits.ALLOW_FUN =1;
+	}   
+*/		 
     if (ff.bits.ALLOW_FUN) {
 
 
@@ -819,19 +827,19 @@ void ADC1_CMP_IRQHandler(void) {
 
 
 void PIN_RELE_POWER_SetLow() {
-    gpio_bits_reset(GPIOA,GPIO_PINS_0);
+    gpio_bits_reset(PIN_POWER_RELE);
 };
 void PIN_RELE_CONTROL_SetLow() {
-    gpio_bits_reset(GPIOA,GPIO_PINS_2);
+    gpio_bits_reset(PIN_CONTROL_RELE);
 };
 void PIN_ALARM_STATE_SetLow() {
-    gpio_bits_reset(GPIOA,GPIO_PINS_6);
+    gpio_bits_reset(PIN_ALARM);
 };
 void PIN_ZUMMER_SetLow() {
-    gpio_bits_reset(GPIOB,GPIO_PINS_0);
+    gpio_bits_reset(PIN_ZUMMER);
 };
 void PIN_LED_SetLow() {
-    gpio_bits_reset(GPIOB,GPIO_PINS_1);
+    gpio_bits_reset(PIN_LED_RED);
 };
 
 void start_setup() {

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\proj_s_u.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\proj_s_u.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Wed Sep 21 17:50:42 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Sep 22 16:07:36 2022
 <BR><P>
 <H3>Maximum Stack Usage =         80 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -444,7 +444,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_bits_set
 </UL>
-<BR>[Called By]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_10_work
+<BR>[Called By]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_100_work
 </UL>
 
 <P><STRONG><a name="[47]"></a>PIN_POWER_MEAS_SetLow</STRONG> (Thumb, 16 bytes, Stack size 8 bytes, main.o(i.PIN_POWER_MEAS_SetLow))
@@ -484,7 +484,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_at32f421.o(.text)
 </UL>
 <P><STRONG><a name="[1d]"></a>TMR6_GLOBAL_IRQHandler</STRONG> (Thumb, 56 bytes, Stack size 8 bytes, main.o(i.TMR6_GLOBAL_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = TMR6_GLOBAL_IRQHandler &rArr; ms_tick &rArr; ms_10_work &rArr; PIN_POWER_MEAS_SetHigh
+<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = TMR6_GLOBAL_IRQHandler &rArr; ms_tick &rArr; ms_100_work &rArr; PIN_POWER_MEAS_SetHigh
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tmr_period_value_set
 <LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;zummer_switch
@@ -519,7 +519,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[75]"></a>adc_ordinary_conversion_trigger_set</STRONG> (Thumb, 52 bytes, Stack size 0 bytes, at32f421_adc.o(i.adc_ordinary_conversion_trigger_set))
-<BR><BR>[Called By]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_10_work
+<BR><BR>[Called By]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_100_work
 </UL>
 
 <P><STRONG><a name="[4e]"></a>autorotation_work</STRONG> (Thumb, 122 bytes, Stack size 4 bytes, main.o(i.autorotation_work))
@@ -676,7 +676,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hardware_init
 </UL>
 
-<P><STRONG><a name="[63]"></a>hardware_init</STRONG> (Thumb, 310 bytes, Stack size 16 bytes, main.o(i.hardware_init))
+<P><STRONG><a name="[63]"></a>hardware_init</STRONG> (Thumb, 308 bytes, Stack size 16 bytes, main.o(i.hardware_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = hardware_init &rArr; gpio_set &rArr; gpio_init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;wdt_register_write_enable
@@ -728,8 +728,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sec_work
 </UL>
 
-<P><STRONG><a name="[74]"></a>ms_10_work</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, main.o(i.ms_10_work))
-<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = ms_10_work &rArr; PIN_POWER_MEAS_SetHigh
+<P><STRONG><a name="[74]"></a>ms_100_work</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, main.o(i.ms_100_work))
+<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = ms_100_work &rArr; PIN_POWER_MEAS_SetHigh
 </UL>
 <BR>[Calls]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adc_ordinary_conversion_trigger_set
 <LI><a href="#[45]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIN_POWER_MEAS_SetHigh
@@ -748,12 +748,12 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[4b]"></a>ms_tick</STRONG> (Thumb, 166 bytes, Stack size 8 bytes, main.o(i.ms_tick))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = ms_tick &rArr; ms_10_work &rArr; PIN_POWER_MEAS_SetHigh
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = ms_tick &rArr; ms_100_work &rArr; PIN_POWER_MEAS_SetHigh
 </UL>
 <BR>[Calls]<UL><LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop_tone
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sec_work
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_200_work
-<LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_10_work
+<LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ms_100_work
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TMR6_GLOBAL_IRQHandler
 </UL>

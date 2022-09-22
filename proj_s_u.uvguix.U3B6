@@ -11,17 +11,17 @@
     <View>
       <WinId>38003</WinId>
       <ViewName>Registers</ViewName>
-      <TableColWidths>115 100</TableColWidths>
+      <TableColWidths>115 80</TableColWidths>
     </View>
     <View>
       <WinId>346</WinId>
       <ViewName>Code Coverage</ViewName>
-      <TableColWidths>1010 208</TableColWidths>
+      <TableColWidths>1010 160</TableColWidths>
     </View>
     <View>
       <WinId>204</WinId>
       <ViewName>Performance Analyzer</ViewName>
-      <TableColWidths>1170 175 175 100</TableColWidths>
+      <TableColWidths>1170</TableColWidths>
     </View>
   </SECTreeCtrl>
 
@@ -36,7 +36,7 @@
       <WinId>1936</WinId>
       <ViewName>Watch 1</ViewName>
       <UserString></UserString>
-      <TableColWidths>180 218 80</TableColWidths>
+      <TableColWidths>80 80 80</TableColWidths>
     </View>
     <View>
       <WinId>1937</WinId>
@@ -3517,10 +3517,10 @@
       <Doc>
         <Name>.\main.c</Name>
         <ColumnNumber>2</ColumnNumber>
-        <TopLine>1</TopLine>
-        <CurrentLine>8</CurrentLine>
+        <TopLine>29</TopLine>
+        <CurrentLine>43</CurrentLine>
         <Folding>1</Folding>
-        <ContractedFolders>57,137,143,149,158,167,168,176,178,195,197,214,230,241,242,262,263,270,271,278,280,298,331,363,369,379,392,394,406,407,418,424,433,440,443,454,468,472,473,476,484,487,490,500,516,526,532,537,543,560,576,703,714,718,722,755,803,809,819,828,831,834,837,840,844</ContractedFolders>
+        <ContractedFolders>57,137,143,149,158,167,168,176,178,195,197,214,230,241,242,262,263,270,271,278,280,298,323,331,336,363,369,379,392,394,406,407,418,424,433,440,443,454,468,472,473,476,484,487,490,500,516,526,543,560,576,600,692,703,714,718,722,726,755,803,809,819,828,831,834,837,840,844,872</ContractedFolders>
         <PaneID>0</PaneID>
       </Doc>
       <Doc>

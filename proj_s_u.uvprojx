@@ -479,6 +479,12 @@
           <targetInfo name="Target 1"/>
         </targetInfos>
       </file>
+      <file attr="config" category="source" name="Device\Firmware\Peripherals\src\at32f421_flash.c" version="2.0.0">
+        <instance index="0" removed="1">RTE\Device\-AT32F421K8T7\at32f421_flash.c</instance>
+        <component Cclass="Device" Cgroup="at32f421_firmware_library" Csub="flash" Cvendor="ArteryTek" Cversion="2.0.0" condition="AT32F421 STDPERIPHERALS CRM"/>
+        <package name="AT32F421_DFP" schemaVersion="1.2" vendor="ArteryTek" version="2.0.5"/>
+        <targetInfos/>
+      </file>
       <file attr="config" category="source" name="Device\Firmware\Peripherals\src\at32f421_gpio.c" version="2.0.0">
         <instance index="0">RTE\Device\-AT32F421K8T7\at32f421_gpio.c</instance>
         <component Cclass="Device" Cgroup="at32f421_firmware_library" Csub="gpio" Cvendor="ArteryTek" Cversion="2.0.0" condition="AT32F421 STDPERIPHERALS CRM"/>

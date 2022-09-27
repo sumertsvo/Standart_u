@@ -271,6 +271,10 @@ void rele_off() {
 
 
 void close() {
+	if (!ff.bits.CLOSED && !ff.bits.OPENED)
+	{
+		ff.bits.OPENED=1;
+	}
     if (ff.bits.OPENED && ff.bits.TARGET_POS_CLOSED) {
         go_close();
     }
@@ -279,6 +283,10 @@ void close() {
 
 
 void open() {
+	if (!ff.bits.CLOSED && !ff.bits.OPENED)
+	{
+		ff.bits.CLOSED=1;
+	}
     if (ff.bits.CLOSED && ff.bits.TARGET_POS_OPENED) {
         go_open();
     }
@@ -300,6 +308,7 @@ void rele_tick() {
                 ff.bits.OPENED = 1;
                 ff.bits.OPENING = 0;
                 ff.bits.AUTOROTATION_WORK = 0;
+							beep_short_count = 1;
             }
         }
     }
@@ -324,6 +333,7 @@ void rele_tick() {
                 ff.bits.RELE_CONTROL_ON = 0;
                 ff.bits.CLOSED = 1;
                 ff.bits.CLOSING = 0;
+							beep_short_count=2;
             }
         }
     }
@@ -333,6 +343,8 @@ void rele_tick() {
 
 /*logic*/
 void start_alarm() {
+	ff.bits.TARGET_POS_CLOSED=1;
+	ff.bits.TARGET_POS_OPENED=0;
     ff.bits.ALARM_ON = 1;
     ff.bits.ALARM_OFF = 0;
     ff.bits.MELODY_ON = 1;
@@ -348,22 +360,24 @@ void clear_alarm() {
 void fun_work() {
     {
         if (
+					ff.bits.TARGET_POS_OPENED&&
             ff.bits.FUN_LOW &&
             !ff.bits.FUN_HIGH &&
             ff.bits.ALARM_OFF &&
             ff.bits.MOVING_ALLOWED &&
-				!ff.bits.OPENING &&
-				!ff.bits.CLOSING &&
+						!ff.bits.OPENING &&
+						!ff.bits.CLOSING &&
             (ff.bits.CLOSED || !(ff.bits.OPENED || ff.bits.CLOSED) ) ) {
             beep_short_count = 1;
             open();
         };
 						
         if (
+					ff.bits.TARGET_POS_CLOSED &&
             ff.bits.FUN_HIGH &&
             ff.bits.MOVING_ALLOWED &&
             !ff.bits.FUN_LOW &&
-            ff.bits.OPENED &&
+            (ff.bits.OPENED || !(ff.bits.OPENED || ff.bits.CLOSED) ) &&
 				!ff.bits.OPENING &&
 				!ff.bits.CLOSING)
 				//&& !ff.bits.AUTOROTATION_WORK) 
@@ -830,10 +844,14 @@ void get_fun() {
             fun_counter = FUN_MEAS_COUNT;
             ff.bits.FUN_LOW = 0;
             ff.bits.FUN_HIGH = 1;
+							ff.bits.TARGET_POS_CLOSED=1;
+					ff.bits.TARGET_POS_OPENED=0;
         } else if (fun_counter<-FUN_MEAS_COUNT) {
             fun_counter = -FUN_MEAS_COUNT;
             ff.bits.FUN_LOW = 1;
             ff.bits.FUN_HIGH = 0;
+					ff.bits.TARGET_POS_CLOSED=0;
+					ff.bits.TARGET_POS_OPENED=1;
         }
         ff.bits.ALLOW_FUN = 0;
     }
@@ -864,9 +882,13 @@ void TMR6_GLOBAL_IRQHandler(void) {
 void ADC1_CMP_IRQHandler(void) {
     wdt_counter_reload();
     if(sensor_index==0)
+		{
         adc_result_0	= adc_ordinary_conversion_data_get(ADC1);
+		}
     else
+		{
         adc_result_1	= adc_ordinary_conversion_data_get(ADC1);
+		}
     fun_result = gpio_input_data_bit_read(PIN_FUN);
 
     ff.bits.ALLOW_MEASURE = 1;

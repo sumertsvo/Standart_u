@@ -8,21 +8,20 @@
 //#define DEBUG_PCB
 #define DEBUG_AUTOROTATION
 
-#define PIN_ALARM 					GPIOA,GPIO_PINS_2
-#define PIN_CONTROL_RELE 		GPIOB,GPIO_PINS_5
-#define PIN_POWER_RELE			GPIOB,GPIO_PINS_4
+#define PIN_STATE_ALARM 			GPIOA,GPIO_PINS_2
+#define PIN_STATE_MOTOR				GPIOA,GPIO_PINS_3
+#define PIN_CONTROL_RELAY 			GPIOB,GPIO_PINS_5
+#define PIN_POWER_RELAY				GPIOB,GPIO_PINS_4
 #define PIN_LED_RED 				GPIOA,GPIO_PINS_12
-
 #ifdef DEBUG_PCB
 #define PIN_ZUMMER 					GPIOA,GPIO_PINS_15//14
 #else
 #define PIN_ZUMMER 					GPIOA,GPIO_PINS_14//14
 #endif
-
-#define PIN_POWER_SENSOR 		GPIOA,GPIO_PINS_11
+#define PIN_POWER_SENSOR 			GPIOA,GPIO_PINS_11
 #define PIN_SENSOR_1 				GPIOA,GPIO_PINS_1
 #define PIN_SENSOR_2 				GPIOA,GPIO_PINS_0
-#define PIN_FUN 						GPIOB,GPIO_PINS_3
+#define PIN_FUN 					GPIOB,GPIO_PINS_3
 
 
 /*_____________________________________________________________________*/
@@ -33,19 +32,17 @@
 const char SHORT_ZUMMER_DELAY = 30;
 const char LONG_ZUMMER_DELAY = 120;
 const char FRIMWARE_VERSION_EEPROM_ADR = 0x01;
-const unsigned AUTOROTATION_DAYS = 14; //???? ?? ???????? ?????
+const unsigned AUTOROTATION_DAYS = 14;
 const char MOVING_WAIT_DELAY = 1;
-const unsigned LOW_WATER_RESISTANSE = 20000; //????????????? ???????
-const unsigned HIGH_WATER_RESISTANSE = 25000; //
-const unsigned UP_RESISTANSE = 20000; //????????????? ????????
-/*?????? ?? ????????*/
-const char WSP_MEAS_COUNT = 4; //?????????? ????????? ???????
-const char FUN_MEAS_COUNT = 3; //?????????? ????????? ?????????????
-//const char JUMP_MEAS_COUNT = 10; //?????????? ????????? ????????
-/*????????*/
-const char RELE_POWER_WORK_DELAY = 60; // sec
-//const char RELE_POWER_AUTOROTATION_DELAY = 25; // sec
-const char RELE_GAP = 1; //sec
+const unsigned LOW_WATER_RESISTANSE = 20000; 
+const unsigned HIGH_WATER_RESISTANSE = 25000; 
+const unsigned UP_RESISTANSE = 20000; 
+
+const char WSP_MEAS_COUNT = 4;
+const char FUN_MEAS_COUNT = 3; 
+
+const char RELAY_POWER_WORK_DELAY = 60; // sec
+const char RELAY_GAP = 1; //sec
 const char MELODY_REPEAT_DELAY = 30; //min
 #ifdef DEBUG_AUTOROTATION
 const uint32_t AUTOROTATION_DELAY = 300;
@@ -80,8 +77,8 @@ static union {
         unsigned OPENED : 1;
         unsigned CLOSING : 1;
         unsigned CLOSED : 1;
-        unsigned RELE_POWER_ON : 1;
-        unsigned RELE_CONTROL_ON : 1;
+        unsigned RELAY_POWER_ON : 1;
+        unsigned RELAY_CONTROL_ON : 1;
         unsigned TONE_ON : 1;
 
         unsigned TONE_OFF : 1;
@@ -112,10 +109,10 @@ static union {
 /*TIMES*/
 
 /*sec_div*/
-uint32_t time_rotation; //????? ?? ???????????? (???)
-unsigned time_rele_power; //????? ?? ???????? ???? (???)
-unsigned time_rele_control;
-unsigned time_rele_gap;
+uint32_t time_rotation;
+unsigned time_relay_power; 
+unsigned time_relay_control;
+unsigned time_relay_gap;
 
 uint64_t tone_gap_millis;
 char sec_count = 0;
@@ -155,7 +152,7 @@ void stop_tone() {
 }
 
 void beep_short() {
-   
+
     if (beep_short_count > 0)	beep_short_count--;
     ms_tone_delay = SHORT_ZUMMER_DELAY;
     ff.bits.LAST_BEEP_LONG = 0;
@@ -164,7 +161,7 @@ void beep_short() {
 
 
 void beep_long() {
-  
+
     if (beep_long_count > 0) 	beep_long_count--;
     ms_tone_delay = LONG_ZUMMER_DELAY;
     ff.bits.LAST_BEEP_LONG = 1;
@@ -188,36 +185,17 @@ void go_close() {
         ff.bits.OPENED = 0;
         ff.bits.OPENING = 0;
 
-        ff.bits.RELE_POWER_ON = 0;
-        ff.bits.RELE_CONTROL_ON = 1;
+        ff.bits.RELAY_POWER_ON = 0;
+        ff.bits.RELAY_CONTROL_ON = 1;
 
-        time_rele_control = RELE_GAP + RELE_POWER_WORK_DELAY + RELE_GAP;
-        time_rele_power = RELE_POWER_WORK_DELAY;
-        time_rele_gap = RELE_GAP;
+        time_relay_control = RELAY_GAP + RELAY_POWER_WORK_DELAY + RELAY_GAP;
+        time_relay_power = RELAY_POWER_WORK_DELAY;
+        time_relay_gap = RELAY_GAP;
 
         time_rotation = 0;
 
     }
 }
-
- /*
-void go_close_short() {
-
-    if (!ff.bits.CLOSING && !ff.bits.CLOSED && ff.bits.MOVING_ALLOWED) {
-        ff.bits.CLOSING = 1;
-        ff.bits.OPENED = 0;
-        ff.bits.OPENING = 0;
-
-        ff.bits.RELE_POWER_ON = 0;
-        ff.bits.RELE_CONTROL_ON = 1;
-
-        time_rele_control = RELE_GAP + RELE_POWER_AUTOROTATION_DELAY + RELE_GAP;
-        time_rele_power = RELE_POWER_AUTOROTATION_DELAY;
-        time_rele_gap = RELE_GAP;
-
-
-    }
-}*/
 
 void go_open() {
 
@@ -227,55 +205,22 @@ void go_open() {
         ff.bits.CLOSING = 0;
 
 
-        ff.bits.RELE_CONTROL_ON = 0;
-        ff.bits.RELE_POWER_ON = 1;
+        ff.bits.RELAY_CONTROL_ON = 0;
+        ff.bits.RELAY_POWER_ON = 1;
 
-        time_rele_power = RELE_POWER_WORK_DELAY;
+        time_relay_power = RELAY_POWER_WORK_DELAY;
         return;
     }
 }
-/*
-void go_close_alt() {
 
-    if ((!ff.bits.CLOSED && ff.bits.MOVING_ALLOWED) || ff.bits.ALARM_ON) {
-        ff.bits.OPENED = 0;
-        ff.bits.CLOSED = 1;
-
-        ff.bits.RELE_CONTROL_ON = 0;
-        ff.bits.RELE_POWER_ON = 1;
-    }
-}
-
-void go_open_alt() {
-    if (!ff.bits.OPENED && ff.bits.MOVING_ALLOWED) {
-        ff.bits.CLOSED = 0;
-        ff.bits.OPENED = 1;
-
-        ff.bits.RELE_CONTROL_ON = 0;
-        ff.bits.RELE_POWER_ON = 0;
-    }
-}
-
-
-void rele_off() {
-    ff.bits.RELE_CONTROL_ON = 0;
-    ff.bits.RELE_POWER_ON = 0;
-    ff.bits.CLOSING = 0;
-    ff.bits.OPENING = 0;
-    ff.bits.CLOSED = 0;
-    ff.bits.OPENED = 0;
-    ff.bits.MOVING_ALLOWED = 0;
-    time_moving_wait = MOVING_WAIT_DELAY;
-}
-  */
 
 
 void close() {
-	if (!ff.bits.CLOSED && !ff.bits.OPENED)
-	{
-		ff.bits.OPENED=1;
-	}
-    if (ff.bits.OPENED && ff.bits.TARGET_POS_CLOSED) {
+    if (!ff.bits.CLOSED && !ff.bits.OPENED)
+    {
+        ff.bits.OPENED=1;
+    }
+    if (ff.bits.OPENED && ff.bits.TARGET_POS_CLOSED && !ff.bits.OPENING && !ff.bits.CLOSING) {
         go_close();
     }
 }
@@ -283,17 +228,17 @@ void close() {
 
 
 void open() {
-	if (!ff.bits.CLOSED && !ff.bits.OPENED)
-	{
-		ff.bits.CLOSED=1;
-	}
+    if (!ff.bits.CLOSED && !ff.bits.OPENED)
+    {
+        ff.bits.CLOSED=1;
+    }
     if (ff.bits.CLOSED && ff.bits.TARGET_POS_OPENED) {
         go_open();
     }
 }
 
 
-void rele_tick() {
+void relay_tick() {
 
     if (ff.bits.OPENING && ff.bits.CLOSING) {
         return;
@@ -301,14 +246,14 @@ void rele_tick() {
 
 
     if (ff.bits.OPENING) {
-        if (time_rele_power > 0) {
-            time_rele_power--;
-            if (time_rele_power == 0) {
-                ff.bits.RELE_POWER_ON = 0;
+        if (time_relay_power > 0) {
+            time_relay_power--;
+            if (time_relay_power == 0) {
+                ff.bits.RELAY_POWER_ON = 0;
                 ff.bits.OPENED = 1;
                 ff.bits.OPENING = 0;
                 ff.bits.AUTOROTATION_WORK = 0;
-							beep_short_count = 1;
+               // beep_short_count = 1;
             }
         }
     }
@@ -316,24 +261,24 @@ void rele_tick() {
 
     if (ff.bits.CLOSING) {
 
-        if (time_rele_gap == 0) {
-            if (time_rele_power > 0) {
-                ff.bits.RELE_POWER_ON = 1;
-                time_rele_power--;
+        if (time_relay_gap == 0) {
+            if (time_relay_power > 0) {
+                ff.bits.RELAY_POWER_ON = 1;
+                time_relay_power--;
             } else {
-                ff.bits.RELE_POWER_ON = 0;
+                ff.bits.RELAY_POWER_ON = 0;
             }
         } else {
-            time_rele_gap--;
+            time_relay_gap--;
         }
 
-        if (time_rele_control > 0) {
-            time_rele_control--;
-            if (time_rele_control == 0) {
-                ff.bits.RELE_CONTROL_ON = 0;
+        if (time_relay_control > 0) {
+            time_relay_control--;
+            if (time_relay_control == 0) {
+                ff.bits.RELAY_CONTROL_ON = 0;
                 ff.bits.CLOSED = 1;
                 ff.bits.CLOSING = 0;
-							beep_short_count=2;
+             //   beep_short_count=2;
             }
         }
     }
@@ -343,8 +288,8 @@ void rele_tick() {
 
 /*logic*/
 void start_alarm() {
-	ff.bits.TARGET_POS_CLOSED=1;
-	ff.bits.TARGET_POS_OPENED=0;
+    ff.bits.TARGET_POS_CLOSED=1;
+    ff.bits.TARGET_POS_OPENED=0;
     ff.bits.ALARM_ON = 1;
     ff.bits.ALARM_OFF = 0;
     ff.bits.MELODY_ON = 1;
@@ -360,32 +305,32 @@ void clear_alarm() {
 void fun_work() {
     {
         if (
-					ff.bits.TARGET_POS_OPENED&&
+            ff.bits.TARGET_POS_OPENED &&
             ff.bits.FUN_LOW &&
             !ff.bits.FUN_HIGH &&
             ff.bits.ALARM_OFF &&
             ff.bits.MOVING_ALLOWED &&
-						!ff.bits.OPENING &&
-						!ff.bits.CLOSING &&
+            !ff.bits.OPENING &&
+            !ff.bits.CLOSING &&
             (ff.bits.CLOSED || !(ff.bits.OPENED || ff.bits.CLOSED) ) ) {
             beep_short_count = 1;
             open();
         };
-						
+
         if (
-					ff.bits.TARGET_POS_CLOSED &&
+            ff.bits.TARGET_POS_CLOSED &&
             ff.bits.FUN_HIGH &&
             ff.bits.MOVING_ALLOWED &&
             !ff.bits.FUN_LOW &&
             (ff.bits.OPENED || !(ff.bits.OPENED || ff.bits.CLOSED) ) &&
-				!ff.bits.OPENING &&
-				!ff.bits.CLOSING)
-				//&& !ff.bits.AUTOROTATION_WORK) 
-				{
+            !ff.bits.OPENING &&
+            !ff.bits.CLOSING)
+            //&& !ff.bits.AUTOROTATION_WORK)
+        {
             beep_short_count = 2;
             close();
         }
-				
+
     }
 }
 
@@ -394,17 +339,19 @@ void autorotation_work() {
 
     if ((time_rotation > AUTOROTATION_DELAY) &&
             ff.bits.CLOSED &&
-            ff.bits.ALARM_OFF
+            ff.bits.ALARM_OFF &&
+			ff.bits.TARGET_POS_OPENED
        ) {
         open();
         time_rotation = 0;
+		ff.bits.TARGET_POS_CLOSED=0;
     }
     if ((time_rotation > AUTOROTATION_DELAY) &&
             ff.bits.OPENED
        ) {
+		  ff.bits.TARGET_POS_CLOSED =1;
         close();
-				 beep_short_count=1;
-        //ff.bits.AUTOROTATION_WORK = 1;
+        beep_long_count=1;
     }
 
 }
@@ -413,7 +360,6 @@ void autorotation_work() {
 /*¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*/
 
 /*TIMES*/
-
 
 void minute_tick() {
 
@@ -459,7 +405,7 @@ void sec_work() {
     if (!ff.bits.CLOSED) {
         time_rotation++;
     }
-    rele_tick();
+    relay_tick();
 
 
     //led tick
@@ -521,7 +467,7 @@ void ms_200_work() {
     }
 }
 
-void PIN_POWER_MEAS_SetHigh(void);
+
 
 void ms_100_work() {
 
@@ -550,7 +496,7 @@ void ms_100_work() {
 
 
         if (!f) {
-            PIN_POWER_MEAS_SetHigh();
+            gpio_bits_set(PIN_POWER_SENSOR);
             ff.bits.MEASURING=1;
             f=1;
         } else {
@@ -601,7 +547,14 @@ void ms_tick() {
 /*¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*/
 
 /*HARDWARE*/
-
+char PIN_FUN_STATE_GetValue() {
+    return(fun_result);
+}
+uint16_t   ADC_GetConversion() {
+    if (adc_result_0<adc_result_1)
+        return (adc_result_0);
+    else return(adc_result_1);
+};
 
 
 void gpio_set(gpio_type *PORT, uint32_t PIN, gpio_drive_type DRIVE, gpio_mode_type MODE, gpio_output_type OUT_TYPE, gpio_pull_type PULL ) {
@@ -682,13 +635,13 @@ void hardware_init() {
              GPIO_OUTPUT_PUSH_PULL,
              GPIO_PULL_NONE);
 
-    gpio_set(PIN_POWER_RELE,
+    gpio_set(PIN_POWER_RELAY,
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_OUTPUT,
              GPIO_OUTPUT_PUSH_PULL,
              GPIO_PULL_NONE);
 
-    gpio_set(PIN_CONTROL_RELE,
+    gpio_set(PIN_CONTROL_RELAY,
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_OUTPUT,
              GPIO_OUTPUT_PUSH_PULL,
@@ -718,7 +671,13 @@ void hardware_init() {
              GPIO_OUTPUT_OPEN_DRAIN,
              GPIO_PULL_NONE);
 
-    gpio_set(PIN_ALARM,
+    gpio_set(PIN_STATE_ALARM,
+             GPIO_DRIVE_STRENGTH_MODERATE,
+             GPIO_MODE_OUTPUT,
+             GPIO_OUTPUT_PUSH_PULL,
+             GPIO_PULL_NONE);
+			 
+	gpio_set(PIN_STATE_MOTOR,
              GPIO_DRIVE_STRENGTH_MODERATE,
              GPIO_MODE_OUTPUT,
              GPIO_OUTPUT_PUSH_PULL,
@@ -744,10 +703,12 @@ void hardware_init() {
 
 
 void hardware_work() {
-    gpio_bits_write(PIN_ALARM,(confirm_state) (ff.bits.ALARM_ON));
-    gpio_bits_write(PIN_CONTROL_RELE,(confirm_state) (ff.bits.RELE_CONTROL_ON));
-    gpio_bits_write(PIN_POWER_RELE,(confirm_state) (ff.bits.RELE_POWER_ON));
+    gpio_bits_write(PIN_STATE_ALARM,(confirm_state) (ff.bits.ALARM_ON));
+	gpio_bits_write(PIN_STATE_MOTOR,(confirm_state) (ff.bits.OPENING || ff.bits.OPENED));
+    gpio_bits_write(PIN_CONTROL_RELAY,(confirm_state) (ff.bits.RELAY_CONTROL_ON));
+    gpio_bits_write(PIN_POWER_RELAY,(confirm_state) (ff.bits.RELAY_POWER_ON));
     gpio_bits_write(PIN_LED_RED,(confirm_state) (ff.bits.LED_ON));
+	 
     if (ff.bits.TONE_OFF) {
         gpio_bits_reset(PIN_ZUMMER);
     };
@@ -767,21 +728,6 @@ void zummer_switch() {
 #endif
 #endif
 }
-
-void PIN_POWER_MEAS_SetHigh() {
-    gpio_bits_set(PIN_POWER_SENSOR);
-};
-
-void	PIN_POWER_MEAS_SetLow   () {
-    gpio_bits_reset(PIN_POWER_SENSOR);
-};
-
-uint16_t   ADC_GetConversion() {
-    if (adc_result_0<adc_result_1)
-        return (adc_result_0);
-    else return(adc_result_1);
-};
-
 void get_wsp() {
 
     if (ff.bits.ALLOW_MEASURE) {
@@ -791,7 +737,7 @@ void get_wsp() {
 
         static signed char bad_measures_counter = 0;
         uint16_t res = ADC_GetConversion();
-        PIN_POWER_MEAS_SetLow();
+        gpio_bits_reset(PIN_POWER_SENSOR);
         if (res < BAD_WSP_VOLTAGE) {
             bad_measures_counter++;
         } else {
@@ -810,31 +756,8 @@ void get_wsp() {
         ff.bits.ALLOW_MEASURE = 0;
     }
 }
-
-char PIN_FUN_STATE_GetValue() {
-    return(fun_result);
-}
-
-
 void get_fun() {
-
-    /*
-    if(GPIOA->odt_bit.odt1 == 0)		{
-          PIN_POWER_MEAS_SetHigh();
-          fun_result = gpio_input_data_bit_read(PIN_FUN);
-         PIN_POWER_MEAS_SetLow();
-          ff.bits.ALLOW_FUN =1;
-    	} else
-    	 {
-    	PIN_POWER_MEAS_SetHigh();
-          fun_result = gpio_input_data_bit_read(PIN_FUN);
-
-          ff.bits.ALLOW_FUN =1;
-    }
-    */
     if (ff.bits.ALLOW_FUN) {
-
-
         static signed char fun_counter;
 
         if (PIN_FUN_STATE_GetValue()) fun_counter--;
@@ -844,14 +767,14 @@ void get_fun() {
             fun_counter = FUN_MEAS_COUNT;
             ff.bits.FUN_LOW = 0;
             ff.bits.FUN_HIGH = 1;
-							ff.bits.TARGET_POS_CLOSED=1;
-					ff.bits.TARGET_POS_OPENED=0;
+            ff.bits.TARGET_POS_CLOSED=1;
+            ff.bits.TARGET_POS_OPENED=0;
         } else if (fun_counter<-FUN_MEAS_COUNT) {
             fun_counter = -FUN_MEAS_COUNT;
             ff.bits.FUN_LOW = 1;
             ff.bits.FUN_HIGH = 0;
-					ff.bits.TARGET_POS_CLOSED=0;
-					ff.bits.TARGET_POS_OPENED=1;
+            ff.bits.TARGET_POS_CLOSED=0;
+            ff.bits.TARGET_POS_OPENED=1;
         }
         ff.bits.ALLOW_FUN = 0;
     }
@@ -882,13 +805,13 @@ void TMR6_GLOBAL_IRQHandler(void) {
 void ADC1_CMP_IRQHandler(void) {
     wdt_counter_reload();
     if(sensor_index==0)
-		{
+    {
         adc_result_0	= adc_ordinary_conversion_data_get(ADC1);
-		}
+    }
     else
-		{
+    {
         adc_result_1	= adc_ordinary_conversion_data_get(ADC1);
-		}
+    }
     fun_result = gpio_input_data_bit_read(PIN_FUN);
 
     ff.bits.ALLOW_MEASURE = 1;
@@ -896,38 +819,23 @@ void ADC1_CMP_IRQHandler(void) {
 }
 
 
-void PIN_RELE_POWER_SetLow() {
-    gpio_bits_reset(PIN_POWER_RELE);
-};
-void PIN_RELE_CONTROL_SetLow() {
-    gpio_bits_reset(PIN_CONTROL_RELE);
-};
-void PIN_ALARM_STATE_SetLow() {
-    gpio_bits_reset(PIN_ALARM);
-};
-void PIN_ZUMMER_SetLow() {
-    gpio_bits_reset(PIN_ZUMMER);
-};
-void PIN_LED_SetLow() {
-    gpio_bits_reset(PIN_LED_RED);
-};
-
 void start_setup() {
     hardware_init(); // initialize the device
 
     ff.value = 0;
 
-    PIN_RELE_POWER_SetLow();
-    PIN_RELE_CONTROL_SetLow();
-    PIN_ALARM_STATE_SetLow();
-    PIN_POWER_MEAS_SetLow();
-    PIN_ZUMMER_SetLow();
-    PIN_LED_SetLow();
+    gpio_bits_reset(PIN_POWER_RELAY);
+    gpio_bits_reset(PIN_CONTROL_RELAY);
+    gpio_bits_reset(PIN_STATE_ALARM);
+	gpio_bits_reset(PIN_STATE_MOTOR);
+    gpio_bits_reset(PIN_POWER_SENSOR);
+    gpio_bits_reset(PIN_ZUMMER);
+    gpio_bits_reset(PIN_LED_RED);
 
     time_rotation = 0;
-    time_rele_power = 0;
-    time_rele_control = 0;
-    time_rele_gap = 0;
+    time_relay_power = 0;
+    time_relay_control = 0;
+    time_relay_gap = 0;
     ms_tone_delay = 0;
 
 
@@ -937,7 +845,6 @@ void start_setup() {
 
 }
 /*¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*/
-
 
 
 int main(void) {
@@ -960,7 +867,7 @@ int main(void) {
 
             get_wsp();
 
-  //          autorotation_work();
+            autorotation_work();
 
         } else {
             close();

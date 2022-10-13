@@ -8,7 +8,7 @@
 ".\objects\at32f421_wdt.o"
 ".\objects\startup_at32f421.o"
 ".\objects\system_at32f421.o"
---strict --scatter ".\Objects\proj_s_u.sct"
+--strict --scatter ".\Objects\project.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
---list ".\Listings\proj_s_u.map" -o .\Objects\proj_s_u.axf
+--list ".\Listings\project.map" -o .\Objects\project.axf

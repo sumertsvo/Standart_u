@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'proj_s_u' 
+ * Project: 'project' 
  * Target:  'Target 1' 
  */
 

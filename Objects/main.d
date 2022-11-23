@@ -30,3 +30,4 @@
 .\objects\main.o: C:\Keil_v5\ARM\PACK\ArteryTek\AT32F421_DFP\2.0.5\Device\Firmware\Peripherals\inc\at32f421_misc.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\ArteryTek\AT32F421_DFP\2.0.5\Device\Firmware\Peripherals\inc\at32f421_scfg.h
 .\objects\main.o: .\RTE\Device\-AT32F421K8T7\at32f421_conf.h
+.\objects\main.o: flash.h

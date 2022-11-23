@@ -2,6 +2,7 @@
 #include "RTE_Components.h"             // Component selection
 #include "at32f421_conf.h"              // ArteryTek::Device:at32f421_conf
 #include "at32f421_gpio.h"
+#include "flash.h"
 
 
 #define DEBUG
@@ -23,6 +24,8 @@
 #define PIN_SENSOR_2 				GPIOA,GPIO_PINS_0
 #define PIN_FUN 					GPIOB,GPIO_PINS_3
 
+#define TEST_BUFEER_SIZE                 1024
+#define TEST_FLASH_ADDRESS_START         (0x08003000)
 
 /*_____________________________________________________________________*/
 
@@ -138,6 +141,11 @@ char beep_double_count;
 
 /*SERVICE*/
 
+uint16_t buffer_write[TEST_BUFEER_SIZE];
+uint16_t buffer_read[TEST_BUFEER_SIZE];
+error_status err_status;
+
+
 /*sound*/
 void start_tone() {
     ff.bits.ZUM_BUSY = 1;
@@ -221,6 +229,8 @@ void close() {
         ff.bits.OPENED=1;
     }
     if (ff.bits.OPENED && ff.bits.TARGET_POS_CLOSED && !ff.bits.OPENING && !ff.bits.CLOSING) {
+			buffer_write[1]=0xAAAA;
+		err_status = flash_write(TEST_FLASH_ADDRESS_START, buffer_write, TEST_BUFEER_SIZE);
         go_close();
     }
 }
@@ -233,6 +243,7 @@ void open() {
         ff.bits.CLOSED=1;
     }
     if (ff.bits.CLOSED && ff.bits.TARGET_POS_OPENED) {
+	
         go_open();
     }
 }
@@ -278,6 +289,8 @@ void relay_tick() {
                 ff.bits.RELAY_CONTROL_ON = 0;
                 ff.bits.CLOSED = 1;
                 ff.bits.CLOSING = 0;
+				buffer_write[1]=0xFFFF;
+				err_status = flash_write(TEST_FLASH_ADDRESS_START, buffer_write, TEST_BUFEER_SIZE);
              //   beep_short_count=2;
             }
         }
@@ -508,7 +521,7 @@ void ms_100_work() {
 
 void ms_tick() {
 
-//  EventRecord2(0x01,millis,0);
+
 
 
     static uint64_t ms200_count = 0;
@@ -541,7 +554,7 @@ void ms_tick() {
 
 
     ++millis;
-    //	 EventRecord2(0x02,millis,0);
+
 }
 
 /*¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦*/
@@ -851,8 +864,21 @@ int main(void) {
 
 
     start_setup();
-    //  EventRecorderInitialize(EventRecordAll,1);
+   
 
+	flash_read(TEST_FLASH_ADDRESS_START, buffer_read, TEST_BUFEER_SIZE);
+	
+	///*
+	ff.bits.MOVING_ALLOWED = 1;
+	if(buffer_read[1] == 0xAAAA)
+	{
+		go_close();
+	}
+		else
+		{
+			go_open();
+		}
+  //*/
     while (1) {
 
         wdt_counter_reload();

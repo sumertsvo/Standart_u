@@ -5,9 +5,9 @@
 #include "flash.h"
 
 
-#define DEBUG
-#define DEBUG_PCB
-#define DEBUG_AUTOROTATION
+//#define DEBUG
+//#define DEBUG_PCB
+//#define DEBUG_AUTOROTATION
 
 #define PIN_STATE_ALARM 			GPIOA,GPIO_PINS_2
 #define PIN_STATE_MOTOR				GPIOA,GPIO_PINS_3
@@ -232,8 +232,10 @@ void close() {
         ff.bits.OPENED=1;
     }
     if (ff.bits.OPENED && ff.bits.TARGET_POS_CLOSED && !ff.bits.OPENING && !ff.bits.CLOSING) {
-			buffer_write[1]=0xAAAA;
+		
+		buffer_write[1]=0xAAAA;
 		err_status = flash_write(TEST_FLASH_ADDRESS_START, buffer_write, TEST_BUFEER_SIZE);
+		
         go_close();
     }
 }
@@ -247,6 +249,9 @@ void open() {
     }
     if (ff.bits.CLOSED && ff.bits.TARGET_POS_OPENED) {
 	
+		buffer_write[1]=0xBBBB;
+		err_status = flash_write(TEST_FLASH_ADDRESS_START, buffer_write, TEST_BUFEER_SIZE);
+		
         go_open();
     }
 }
@@ -267,6 +272,8 @@ void relay_tick() {
                 ff.bits.OPENED = 1;
                 ff.bits.OPENING = 0;
                 ff.bits.AUTOROTATION_WORK = 0;
+				buffer_write[1]=0xFFFF;
+				err_status = flash_write(TEST_FLASH_ADDRESS_START, buffer_write, TEST_BUFEER_SIZE);
                // beep_short_count = 1;
             }
         }
@@ -886,10 +893,13 @@ int main(void) {
 	{
 		go_close();
 	}	
-	else	
+	else if (buffer_read[1] == 0xBBBB)
 	{
-		if (ff.bits.TARGET_POS_OPENED)
-			go_open();	
+		go_open();	
+	}
+else	
+	{
+	//	if (ff.bits.TARGET_POS_OPENED)  		go_open();	
 	}
 
 	//*/

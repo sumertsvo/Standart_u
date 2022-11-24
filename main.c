@@ -6,7 +6,7 @@
 
 
 #define DEBUG
-//#define DEBUG_PCB
+#define DEBUG_PCB
 #define DEBUG_AUTOROTATION
 
 #define PIN_STATE_ALARM 			GPIOA,GPIO_PINS_2
@@ -41,6 +41,7 @@ const char MOVING_WAIT_DELAY = 1;
 const unsigned LOW_WATER_RESISTANSE = 20000; 
 const unsigned HIGH_WATER_RESISTANSE = 25000; 
 const unsigned UP_RESISTANSE = 20000; 
+const unsigned DELAY_COUNTER = 20; 
 
 const char WSP_MEAS_COUNT = 4;
 const char FUN_MEAS_COUNT = 3; 
@@ -145,6 +146,7 @@ char beep_double_count;
 uint16_t buffer_write[TEST_BUFEER_SIZE];
 uint16_t buffer_read[TEST_BUFEER_SIZE];
 error_status err_status;
+static char delay_counter = 0;
 
 
 /*sound*/
@@ -484,11 +486,14 @@ void ms_200_work() {
 
 
 void ms_100_work() {
+	
+
 
     static char switch_sens_delay;
 
     static char f;
 
+	if (delay_counter<DELAY_COUNTER) delay_counter++;
     if ( !ff.bits.ALARM_ON) {
 
         ++switch_sens_delay;
@@ -871,16 +876,27 @@ int main(void) {
 	
 	///*
 	ff.bits.MOVING_ALLOWED = 1;
+	
+	while (DELAY_COUNTER>delay_counter){
+		ff.bits.ALLOW_FUN =1;
+		get_fun();
+		ff.bits.LED_ON = !ff.bits.LED_ON;
+	                                     }
 	if(buffer_read[1] == 0xAAAA)
 	{
 		go_close();
+	}	
+	else	
+	{
+		if (ff.bits.TARGET_POS_OPENED)
+			go_open();	
 	}
-		else
-		{
-			go_open();
-		}
-  //*/
+
+	//*/
     while (1) {
+		
+		
+		
 
         wdt_counter_reload();
 
@@ -890,6 +906,7 @@ int main(void) {
         if (!ff.bits.ALARM_ON) {
 
             get_fun();
+			
             fun_work();
 
             get_wsp();

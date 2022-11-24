@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\project.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\project.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Nov 24 11:09:00 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Nov 24 12:16:30 2022
 <BR><P>
 <H3>Maximum Stack Usage =        116 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -716,7 +716,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[36]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[36]"></a>main</STRONG> (Thumb, 98 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[36]"></a>main</STRONG> (Thumb, 156 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = main &rArr; fun_work &rArr; close &rArr; flash_write &rArr; flash_write_nocheck &rArr; flash_halfword_program &rArr; flash_operation_wait_for
 </UL>
 <BR>[Calls]<UL><LI><a href="#[3f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;wdt_counter_reload
@@ -738,7 +738,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sec_work
 </UL>
 
-<P><STRONG><a name="[72]"></a>ms_100_work</STRONG> (Thumb, 140 bytes, Stack size 8 bytes, main.o(i.ms_100_work))
+<P><STRONG><a name="[72]"></a>ms_100_work</STRONG> (Thumb, 158 bytes, Stack size 8 bytes, main.o(i.ms_100_work))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = ms_100_work &rArr; adc_ordinary_channel_set
 </UL>
 <BR>[Calls]<UL><LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_bits_set

@@ -3,6 +3,7 @@
 #include "at32f421_conf.h"              // ArteryTek::Device:at32f421_conf
 #include "at32f421_gpio.h"
 #include "flash.h"
+//standard
 
 
 //#define DEBUG
